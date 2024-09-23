@@ -17,18 +17,29 @@ pipeline {
     }
 
     stages {
-        stage('Checkout') {
+        stage('Install Node.js') {
             steps {
-                echo 'Checking out the code...'
-                sh 'echo passed'
+                echo 'Installing Node.js...'
+                sh '''
+                    # Install Node.js and npm
+                    curl -sL https://deb.nodesource.com/setup_16.x | sudo -E bash -
+                    sudo apt-get install -y nodejs
+                '''
             }
         }
 
-        stage('Build and Test') {
+        stage('Checkout') {
             steps {
-                echo 'Building and testing the project...'
-                sh 'ls -ltr'
-                sh 'npm install && npm test'
+                echo 'Checking out the code...'
+              //  sh 'git clone https://github.com/${GIT_USER_NAME}/${GIT_REPO_NAME}.git'
+            }
+        }
+
+        stage('Install Dependencies and Test') {
+            steps {
+                echo 'Installing Node.js dependencies and running tests...'
+                sh 'npm install'
+                sh 'npm test' // Assuming you have tests in your Node.js application
             }
         }
 
@@ -36,7 +47,9 @@ pipeline {
             steps {
                 echo 'Performing static code analysis with SonarQube...'
                 withCredentials([string(credentialsId: 'sonarqube', variable: 'SONAR_AUTH_TOKEN')]) {
-                    sh 'mvn sonar:sonar -Dsonar.login=$SONAR_AUTH_TOKEN -Dsonar.host.url=${SONAR_URL}'
+                    sh '''
+                        npm run sonar:sonar -- -Dsonar.login=$SONAR_AUTH_TOKEN -Dsonar.host.url=${SONAR_URL}
+                    '''
                 }
             }
         }
@@ -58,9 +71,9 @@ pipeline {
             steps {
                 script {
                     echo "Building Docker images..."
-                    sh 'cd spring-boot-app && docker build -t ${DOCKER_IMAGE_1} .'
-                    sh 'cd spring-boot-app && docker build -t ${DOCKER_IMAGE_2} .'
-                    sh 'cd spring-boot-app && docker build -t ${DOCKER_IMAGE_3} .'
+                    sh 'docker build -t ${DOCKER_IMAGE_1} -f Dockerfile.frontend .' // Frontend Dockerfile
+                    sh 'docker build -t ${DOCKER_IMAGE_2} -f Dockerfile.backend .'  // Backend Dockerfile
+                    sh 'docker build -t ${DOCKER_IMAGE_3} -f Dockerfile.socket .'   // Socket Dockerfile
 
                     echo "Pushing Docker images to Amazon ECR..."
                     sh '''
@@ -77,15 +90,4 @@ pipeline {
                 echo 'Updating the Kubernetes deployment file with the new image tag...'
                 withCredentials([string(credentialsId: 'github', variable: 'GITHUB_TOKEN')]) {
                     sh '''
-                        git config user.email "vijayarajuyj1@gmail.com"
-                        git config user.name "vijayrajuyj1"
-                        sed -i "s/{{ .Values.image.tag }}/${BUILD_NUMBER}/g" k8s/deployment.yml
-                        git add k8s/deployment.yml
-                        git commit -m "Update deployment image to version ${BUILD_NUMBER}"
-                        git push https://${GITHUB_TOKEN}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME} HEAD:main
-                    '''
-                }
-            }
-        }
-    }
-}
+                        git config user.email "vijayarajuyj1
