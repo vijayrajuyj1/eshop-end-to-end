@@ -38,8 +38,9 @@ pipeline {
         stage('Install Dependencies and Test') {
             steps {
                 echo 'Installing Node.js dependencies and running tests...'
-                sh 'npm install'
-                sh 'npm test' // Assuming you have tests in your Node.js application
+                sh 'cd frontend && yarn install'
+                sh 'cd backend && npm install'
+                sh 'cd socket && npm install'
             }
         }
 
