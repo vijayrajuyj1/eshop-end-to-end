@@ -21,7 +21,6 @@ pipeline {
             steps {
                 echo 'Installing Node.js...'
                 sh '''
-                    # Install Node.js and npm
                     curl -sL https://deb.nodesource.com/setup_16.x | sudo -E bash -
                     sudo apt-get install -y nodejs
                     npm install -g yarn 
@@ -47,30 +46,50 @@ pipeline {
 
         stage('Static Code Analysis for frontend') {
             steps {
-                echo 'Performing static code analysis with SonarQube...'
+                echo 'Performing static code analysis with SonarQube for frontend...'
                 withCredentials([string(credentialsId: 'sonarqube', variable: 'SONAR_AUTH_TOKEN')]) {
                     sh '''
-                      cd frontend &&  npm run sonar:sonar -- -Dsonar.login=$SONAR_AUTH_TOKEN -Dsonar.host.url=${SONAR_URL}
+                        cd frontend
+                        npm install sonar-scanner --save-dev
+                        ./node_modules/.bin/sonar-scanner \
+                        -Dsonar.projectKey=frontend \
+                        -Dsonar.sources=. \
+                        -Dsonar.login=$SONAR_AUTH_TOKEN \
+                        -Dsonar.host.url=${SONAR_URL}
                     '''
                 }
             }
         }
+
         stage('Static Code Analysis for backend') {
             steps {
-                echo 'Performing static code analysis with SonarQube...'
+                echo 'Performing static code analysis with SonarQube for backend...'
                 withCredentials([string(credentialsId: 'sonarqube', variable: 'SONAR_AUTH_TOKEN')]) {
                     sh '''
-                      cd backend &&  npm run sonar:sonar -- -Dsonar.login=$SONAR_AUTH_TOKEN -Dsonar.host.url=${SONAR_URL}
+                        cd backend
+                        npm install sonar-scanner --save-dev
+                        ./node_modules/.bin/sonar-scanner \
+                        -Dsonar.projectKey=backend \
+                        -Dsonar.sources=. \
+                        -Dsonar.login=$SONAR_AUTH_TOKEN \
+                        -Dsonar.host.url=${SONAR_URL}
                     '''
                 }
             }
         }
-        stage('Static Code Analysisfor socket') {
+
+        stage('Static Code Analysis for socket') {
             steps {
-                echo 'Performing static code analysis with SonarQube...'
+                echo 'Performing static code analysis with SonarQube for socket...'
                 withCredentials([string(credentialsId: 'sonarqube', variable: 'SONAR_AUTH_TOKEN')]) {
                     sh '''
-                      cd socket &&  npm run sonar:sonar -- -Dsonar.login=$SONAR_AUTH_TOKEN -Dsonar.host.url=${SONAR_URL}
+                        cd socket
+                        npm install sonar-scanner --save-dev
+                        ./node_modules/.bin/sonar-scanner \
+                        -Dsonar.projectKey=socket \
+                        -Dsonar.sources=. \
+                        -Dsonar.login=$SONAR_AUTH_TOKEN \
+                        -Dsonar.host.url=${SONAR_URL}
                     '''
                 }
             }
