@@ -4,10 +4,10 @@ pipeline {
     }
 
     environment {
-        AWS_REGION = 'us-east-1' // Change this to your AWS region
-        ECR_REPO_1 = '992382774897.dkr.ecr.us-east-1.amazonaws.com/frontend' // Your first ECR repo
-        ECR_REPO_2 = '992382774897.dkr.ecr.us-east-1.amazonaws.com/backend' // Your second ECR repo
-        ECR_REPO_3 = '992382774897.dkr.ecr.us-east-1.amazonaws.com/socket' // Your third ECR repo
+        AWS_REGION = 'us-east-1'
+        ECR_REPO_1 = '992382774897.dkr.ecr.us-east-1.amazonaws.com/frontend'
+        ECR_REPO_2 = '992382774897.dkr.ecr.us-east-1.amazonaws.com/backend'
+        ECR_REPO_3 = '992382774897.dkr.ecr.us-east-1.amazonaws.com/socket'
         DOCKER_IMAGE_1 = "${ECR_REPO_1}:${BUILD_NUMBER}"
         DOCKER_IMAGE_2 = "${ECR_REPO_2}:${BUILD_NUMBER}"
         DOCKER_IMAGE_3 = "${ECR_REPO_3}:${BUILD_NUMBER}"
@@ -21,6 +21,7 @@ pipeline {
             steps {
                 echo 'Installing Node.js...'
                 sh '''
+                    # Install Node.js and npm
                     curl -sL https://deb.nodesource.com/setup_16.x | sudo -E bash -
                     sudo apt-get install -y nodejs
                     npm install -g yarn 
@@ -28,17 +29,10 @@ pipeline {
             }
         }
 
-        stage('Checkout') {
-            steps {
-                echo 'Checking out the code...'
-             //   sh 'git clone https://github.com/${GIT_USER_NAME}/${GIT_REPO_NAME}.git'
-            }
-        }
-
         stage('Install Dependencies and Test') {
             steps {
                 echo 'Installing Node.js dependencies and running tests...'
-                sh 'cd frontend && yarn install --legacy-peer-deps'
+                sh 'cd frontend && npm install --legacy-peer-deps'
                 sh 'cd backend && npm install --legacy-peer-deps'
                 sh 'cd socket && npm install --legacy-peer-deps'
             }
@@ -46,16 +40,14 @@ pipeline {
 
         stage('Static Code Analysis for frontend') {
             steps {
-                echo 'Performing static code analysis with SonarQube for frontend...'
+                echo 'Performing static code analysis with SonarQube...'
                 withCredentials([string(credentialsId: 'sonarqube', variable: 'SONAR_AUTH_TOKEN')]) {
                     sh '''
-                        cd frontend
-                        npm install sonar-scanner --save-dev
-                        ./node_modules/.bin/sonar-scanner \
-                        -Dsonar.projectKey=frontend \
-                        -Dsonar.sources=. \
-                        -Dsonar.login=$SONAR_AUTH_TOKEN \
-                        -Dsonar.host.url=${SONAR_URL}
+                      cd frontend && npx sonar-scanner \
+                      -Dsonar.projectKey=frontend \
+                      -Dsonar.sources=. \
+                      -Dsonar.host.url=${SONAR_URL} \
+                      -Dsonar.login=$SONAR_AUTH_TOKEN
                     '''
                 }
             }
@@ -63,16 +55,14 @@ pipeline {
 
         stage('Static Code Analysis for backend') {
             steps {
-                echo 'Performing static code analysis with SonarQube for backend...'
+                echo 'Performing static code analysis with SonarQube...'
                 withCredentials([string(credentialsId: 'sonarqube', variable: 'SONAR_AUTH_TOKEN')]) {
                     sh '''
-                        cd backend
-                        npm install sonar-scanner --save-dev
-                        ./node_modules/.bin/sonar-scanner \
-                        -Dsonar.projectKey=backend \
-                        -Dsonar.sources=. \
-                        -Dsonar.login=$SONAR_AUTH_TOKEN \
-                        -Dsonar.host.url=${SONAR_URL}
+                      cd backend && npx sonar-scanner \
+                      -Dsonar.projectKey=backend \
+                      -Dsonar.sources=. \
+                      -Dsonar.host.url=${SONAR_URL} \
+                      -Dsonar.login=$SONAR_AUTH_TOKEN
                     '''
                 }
             }
@@ -80,16 +70,14 @@ pipeline {
 
         stage('Static Code Analysis for socket') {
             steps {
-                echo 'Performing static code analysis with SonarQube for socket...'
+                echo 'Performing static code analysis with SonarQube...'
                 withCredentials([string(credentialsId: 'sonarqube', variable: 'SONAR_AUTH_TOKEN')]) {
                     sh '''
-                        cd socket
-                        npm install sonar-scanner --save-dev
-                        ./node_modules/.bin/sonar-scanner \
-                        -Dsonar.projectKey=socket \
-                        -Dsonar.sources=. \
-                        -Dsonar.login=$SONAR_AUTH_TOKEN \
-                        -Dsonar.host.url=${SONAR_URL}
+                      cd socket && npx sonar-scanner \
+                      -Dsonar.projectKey=socket \
+                      -Dsonar.sources=. \
+                      -Dsonar.host.url=${SONAR_URL} \
+                      -Dsonar.login=$SONAR_AUTH_TOKEN
                     '''
                 }
             }
