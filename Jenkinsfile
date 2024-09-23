@@ -38,9 +38,9 @@ pipeline {
         stage('Install Dependencies and Test') {
             steps {
                 echo 'Installing Node.js dependencies and running tests...'
-                sh 'cd frontend && yarn install'
-                sh 'cd backend && npm install'
-                sh 'cd socket && npm install'
+                sh 'cd frontend && yarn install --legacy-peer-deps'
+                sh 'cd backend && npm install --legacy-peer-deps'
+                sh 'cd socket && npm install --legacy-peer-deps'
             }
         }
 
