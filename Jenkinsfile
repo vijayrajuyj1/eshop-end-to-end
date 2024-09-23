@@ -31,7 +31,7 @@ pipeline {
         stage('Checkout') {
             steps {
                 echo 'Checking out the code...'
-                sh 'git clone https://github.com/${GIT_USER_NAME}/${GIT_REPO_NAME}.git'
+             //   sh 'git clone https://github.com/${GIT_USER_NAME}/${GIT_REPO_NAME}.git'
             }
         }
 
