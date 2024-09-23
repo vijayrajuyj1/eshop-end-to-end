@@ -16,17 +16,16 @@ pipeline {
         stage('Checkout') {
             steps {
                 echo 'Checking out the code...'
-                sh 'git clone https://github.com/vijayrajuyj1/eshop-end-to-end.git eshop'
+           //     sh 'git clone https://github.com/vijayrajuyj1/eshop-end-to-end.git eshop'
             }
         }
 
         stage('Install Dependencies') {
             steps {
                 echo 'Installing project dependencies...'
-                dir('eshop/frontend1') { sh 'yarn install' }
-                dir('eshop/frontend2') { sh 'yarn install' }
+                dir('eshop/frontend') { sh 'yarn install' }
                 dir('eshop/backend') { sh 'npm install' }
-                dir('eshop/socket') { sh 'yarn install' }
+                dir('eshop/socket') { sh 'npm install' }
             }
         }
 
@@ -34,7 +33,7 @@ pipeline {
             steps {
                 echo 'Performing static code analysis for Frontend 1...'
                 withCredentials([string(credentialsId: 'sonarqube', variable: 'SONAR_AUTH_TOKEN')]) {
-                    dir('eshop/frontend1') {
+                    dir('eshop/frontend') {
                         sh '''
                             npm run sonar:sonar -- -Dsonar.login=$SONAR_AUTH_TOKEN -Dsonar.host.url=${SONAR_URL}
                         '''
