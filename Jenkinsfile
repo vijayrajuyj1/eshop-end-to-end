@@ -4,58 +4,73 @@ pipeline {
     }
 
     environment {
-        AWS_REGION = 'us-east-1' // Change this to your AWS region
-        ECR_REPO_1 = '992382774897.dkr.ecr.us-east-1.amazonaws.com/frontend' // Your first ECR repo
-        ECR_REPO_2 = '992382774897.dkr.ecr.us-east-1.amazonaws.com/backend' // Your second ECR repo
-        ECR_REPO_3 = '992382774897.dkr.ecr.us-east-1.amazonaws.com/socket' // Your third ECR repo
-        DOCKER_IMAGE_1 = "${ECR_REPO_1}:${BUILD_NUMBER}"
-        DOCKER_IMAGE_2 = "${ECR_REPO_2}:${BUILD_NUMBER}"
-        DOCKER_IMAGE_3 = "${ECR_REPO_3}:${BUILD_NUMBER}"
+        AWS_REGION = 'us-east-1'
+        ECR_REPO_1 = '992382774897.dkr.ecr.us-east-1.amazonaws.com/frontend1'
+        ECR_REPO_2 = '992382774897.dkr.ecr.us-east-1.amazonaws.com/frontend2'
+        ECR_REPO_3 = '992382774897.dkr.ecr.us-east-1.amazonaws.com/socket'
+        ECR_REPO_BACKEND = '992382774897.dkr.ecr.us-east-1.amazonaws.com/backend'
         SONAR_URL = "http://54.82.44.149:9000"
-        GIT_REPO_NAME = "eshop-end-to-end"
-        GIT_USER_NAME = "vijayrajuyj1"
     }
 
     stages {
-        stage('Install Node.js') {
-            steps {
-                echo 'Installing Node.js...'
-                sh '''
-                    # Install Node.js and npm
-                    curl -sL https://deb.nodesource.com/setup_16.x | sudo -E bash -
-                    sudo apt-get install -y nodejs
-                    npm install -g yarn 
-                '''
-            }
-        }
-
         stage('Checkout') {
             steps {
                 echo 'Checking out the code...'
-             //   sh 'git clone https://github.com/${GIT_USER_NAME}/${GIT_REPO_NAME}.git'
+                sh 'git clone https://github.com/vijayrajuyj1/eshop-end-to-end.git eshop'
             }
         }
 
-        stage('Install Dependencies and Test') {
+        stage('Install Dependencies') {
             steps {
-                echo 'Installing Node.js dependencies and running tests...'
-                sh 'cd frontend && yarn install'
-                sh 'cd backend && npm install'
-                sh 'cd socket && npm install'
+                echo 'Installing project dependencies...'
+                dir('eshop/frontend1') { sh 'yarn install' }
+                dir('eshop/frontend2') { sh 'yarn install' }
+                dir('eshop/backend') { sh 'npm install' }
+                dir('eshop/socket') { sh 'yarn install' }
             }
         }
 
-        stage('Static Code Analysis') {
+        stage('Static Code Analysis for Frontend') {
             steps {
-                echo 'Performing static code analysis with SonarQube...'
+                echo 'Performing static code analysis for Frontend 1...'
                 withCredentials([string(credentialsId: 'sonarqube', variable: 'SONAR_AUTH_TOKEN')]) {
-                    sh '''
-                      cd frontend &&  npm run sonar:sonar -- -Dsonar.login=$SONAR_AUTH_TOKEN -Dsonar.host.url=${SONAR_URL}
-                    '''
+                    dir('eshop/frontend1') {
+                        sh '''
+                            npm run sonar:sonar -- -Dsonar.login=$SONAR_AUTH_TOKEN -Dsonar.host.url=${SONAR_URL}
+                        '''
+                    }
                 }
             }
         }
 
+        stage('Static Code Analysis for Backend') {
+            steps {
+                echo 'Performing static code analysis for Frontend 2...'
+                withCredentials([string(credentialsId: 'sonarqube', variable: 'SONAR_AUTH_TOKEN')]) {
+                    dir('eshop/backend') {
+                        sh '''
+                            npm run sonar:sonar -- -Dsonar.login=$SONAR_AUTH_TOKEN -Dsonar.host.url=${SONAR_URL}
+                        '''
+                    }
+                }
+            }
+        }
+
+        stage('Static Code Analysis for Socket') {
+            steps {
+                echo 'Performing static code analysis for Backend...'
+                withCredentials([string(credentialsId: 'sonarqube', variable: 'SONAR_AUTH_TOKEN')]) {
+                    dir('eshop/socket') {
+                        sh '''
+                            npm run sonar:sonar -- -Dsonar.login=$SONAR_AUTH_TOKEN -Dsonar.host.url=${SONAR_URL}
+                        '''
+                    }
+                }
+            }
+        }
+        // Add other stages for building, pushing Docker images, etc.
+    
+ 
         stage('Login to ECR') {
             steps {
                 echo "Logging into Amazon ECR..."
@@ -73,9 +88,9 @@ pipeline {
             steps {
                 script {
                     echo "Building Docker images..."
-                    sh 'docker build -t ${DOCKER_IMAGE_1} -f Dockerfile.frontend .' // Frontend Dockerfile
-                    sh 'docker build -t ${DOCKER_IMAGE_2} -f Dockerfile.backend .'  // Backend Dockerfile
-                    sh 'docker build -t ${DOCKER_IMAGE_3} -f Dockerfile.socket .'   // Socket Dockerfile
+                    sh 'cd spring-boot-app && docker build -t ${DOCKER_IMAGE_1} .'
+                    sh 'cd spring-boot-app && docker build -t ${DOCKER_IMAGE_2} .'
+                    sh 'cd spring-boot-app && docker build -t ${DOCKER_IMAGE_3} .'
 
                     echo "Pushing Docker images to Amazon ECR..."
                     sh '''
@@ -87,6 +102,23 @@ pipeline {
             }
         }
 
+        stage('Run Docker Container') {
+            steps {
+                script {
+                    try {
+                        echo "Running Docker containers..."
+                        def container1 = docker.image("${DOCKER_IMAGE_1}").run("-d -p 8082:8082")
+                        def container2 = docker.image("${DOCKER_IMAGE_2}").run("-d -p 8083:8083")
+                        def container3 = docker.image("${DOCKER_IMAGE_3}").run("-d -p 8084:8084")
+                        echo "Running containers: ${container1.id}, ${container2.id}, ${container3.id}"
+                    } catch (Exception e) {
+                        echo "Failed to run Docker containers: ${e.message}"
+                        throw e
+                    }
+                }
+            }
+        }
+
         stage('Update Deployment File') {
             steps {
                 echo 'Updating the Kubernetes deployment file with the new image tag...'
@@ -94,8 +126,8 @@ pipeline {
                     sh '''
                         git config user.email "vijayarajuyj1@gmail.com"
                         git config user.name "vijayrajuyj1"
-                        sed -i "s/{{ .Values.image.tag }}/${BUILD_NUMBER}/g" k8s/deployment.yml
-                        git add k8s/deployment.yml
+                        sed -i "s/{{ .Values.image.tag }}/${BUILD_NUMBER}/g" spring-boot-app-manifests/deployment.yml
+                        git add spring-boot-app-manifests/deployment.yml
                         git commit -m "Update deployment image to version ${BUILD_NUMBER}"
                         git push https://${GITHUB_TOKEN}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME} HEAD:main
                     '''
@@ -104,3 +136,4 @@ pipeline {
         }
     }
 }
+
