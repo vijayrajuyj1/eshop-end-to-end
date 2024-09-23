@@ -1,18 +1,18 @@
 pipeline {
     agent {
-        label 'node1-build'
+        label 'eshop'
     }
 
     environment {
-        AWS_REGION = 'ap-south-1' // Change this to your AWS region
-        ECR_REPO_1 = '123456789012.dkr.ecr.ap-south-1.amazonaws.com/pa-start' // Your first ECR repo
-        ECR_REPO_2 = '123456789012.dkr.ecr.ap-south-1.amazonaws.com/pa-middle' // Your second ECR repo
-        ECR_REPO_3 = '123456789012.dkr.ecr.ap-south-1.amazonaws.com/pa-end' // Your third ECR repo
+        AWS_REGION = 'us-east-1' // Change this to your AWS region
+        ECR_REPO_1 = '992382774897.dkr.ecr.us-east-1.amazonaws.com/frontend' // Your first ECR repo
+        ECR_REPO_2 = '992382774897.dkr.ecr.us-east-1.amazonaws.com/backend' // Your second ECR repo
+        ECR_REPO_3 = '992382774897.dkr.ecr.us-east-1.amazonaws.com/socket' // Your third ECR repo
         DOCKER_IMAGE_1 = "${ECR_REPO_1}:${BUILD_NUMBER}"
         DOCKER_IMAGE_2 = "${ECR_REPO_2}:${BUILD_NUMBER}"
         DOCKER_IMAGE_3 = "${ECR_REPO_3}:${BUILD_NUMBER}"
-        SONAR_URL = "http://50.19.144.223:9000"
-        GIT_REPO_NAME = "Jenkins-end-to-end"
+        SONAR_URL = "http://54.82.44.149:9000"
+        GIT_REPO_NAME = "eshop-end-to-end"
         GIT_USER_NAME = "vijayrajuyj1"
     }
 
@@ -28,7 +28,7 @@ pipeline {
             steps {
                 echo 'Building and testing the project...'
                 sh 'ls -ltr'
-                sh 'cd spring-boot-app && mvn clean package'
+                sh 'mvn clean package'
             }
         }
 
@@ -72,23 +72,6 @@ pipeline {
             }
         }
 
-        stage('Run Docker Container') {
-            steps {
-                script {
-                    try {
-                        echo "Running Docker containers..."
-                        def container1 = docker.image("${DOCKER_IMAGE_1}").run("-d -p 8082:8082")
-                        def container2 = docker.image("${DOCKER_IMAGE_2}").run("-d -p 8083:8083")
-                        def container3 = docker.image("${DOCKER_IMAGE_3}").run("-d -p 8084:8084")
-                        echo "Running containers: ${container1.id}, ${container2.id}, ${container3.id}"
-                    } catch (Exception e) {
-                        echo "Failed to run Docker containers: ${e.message}"
-                        throw e
-                    }
-                }
-            }
-        }
-
         stage('Update Deployment File') {
             steps {
                 echo 'Updating the Kubernetes deployment file with the new image tag...'
@@ -96,8 +79,8 @@ pipeline {
                     sh '''
                         git config user.email "vijayarajuyj1@gmail.com"
                         git config user.name "vijayrajuyj1"
-                        sed -i "s/{{ .Values.image.tag }}/${BUILD_NUMBER}/g" spring-boot-app-manifests/deployment.yml
-                        git add spring-boot-app-manifests/deployment.yml
+                        sed -i "s/{{ .Values.image.tag }}/${BUILD_NUMBER}/g" k8s/deployment.yml
+                        git add k8s/deployment.yml
                         git commit -m "Update deployment image to version ${BUILD_NUMBER}"
                         git push https://${GITHUB_TOKEN}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME} HEAD:main
                     '''
