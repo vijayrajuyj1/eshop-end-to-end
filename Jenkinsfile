@@ -31,7 +31,7 @@ pipeline {
         stage('Checkout') {
             steps {
                 echo 'Checking out the code...'
-              //  sh 'git clone https://github.com/${GIT_USER_NAME}/${GIT_REPO_NAME}.git'
+                sh 'git clone https://github.com/${GIT_USER_NAME}/${GIT_REPO_NAME}.git'
             }
         }
 
@@ -90,4 +90,15 @@ pipeline {
                 echo 'Updating the Kubernetes deployment file with the new image tag...'
                 withCredentials([string(credentialsId: 'github', variable: 'GITHUB_TOKEN')]) {
                     sh '''
-                        git config user.email "vijayarajuyj1
+                        git config user.email "vijayarajuyj1@gmail.com"
+                        git config user.name "vijayrajuyj1"
+                        sed -i "s/{{ .Values.image.tag }}/${BUILD_NUMBER}/g" k8s/deployment.yml
+                        git add k8s/deployment.yml
+                        git commit -m "Update deployment image to version ${BUILD_NUMBER}"
+                        git push https://${GITHUB_TOKEN}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME} HEAD:main
+                    '''
+                }
+            }
+        }
+    }
+}
