@@ -121,7 +121,7 @@ pipeline {
                     sh '''
                         git config user.email "vijayarajuyj1@gmail.com"
                         git config user.name "vijayrajuyj1"
-                        sed -i "s/{{ .Values.image.tag }}/${BUILD_NUMBER}/g" k8s/deployment.yml
+                        sed -i "s/{{ .Values.image.tag }}/${BUILD_NUMBER}/g" k8s/deployment.yaml
                         git add k8s/deployment.yml
                         git commit -m "Update deployment image to version ${BUILD_NUMBER}"
                         git push https://${GITHUB_TOKEN}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME} HEAD:main
