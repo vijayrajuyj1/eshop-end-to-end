@@ -100,9 +100,9 @@ pipeline {
             steps {
                 script {
                     echo "Building Docker images..."
-                    sh 'docker build -t ${DOCKER_IMAGE_1} -f Dockerfile.frontend .' // Frontend Dockerfile
-                    sh 'docker build -t ${DOCKER_IMAGE_2} -f Dockerfile.backend .'  // Backend Dockerfile
-                    sh 'docker build -t ${DOCKER_IMAGE_3} -f Dockerfile.socket .'   // Socket Dockerfile
+                    sh 'docker build -t ${DOCKER_IMAGE_1}  .' // Frontend Dockerfile
+                    sh 'docker build -t ${DOCKER_IMAGE_2}  .'  // Backend Dockerfile
+                    sh 'docker build -t ${DOCKER_IMAGE_3}  .'   // Socket Dockerfile
 
                     echo "Pushing Docker images to Amazon ECR..."
                     sh '''
