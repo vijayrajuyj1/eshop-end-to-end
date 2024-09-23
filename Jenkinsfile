@@ -50,7 +50,7 @@ pipeline {
                 echo 'Performing static code analysis with SonarQube...'
                 withCredentials([string(credentialsId: 'sonarqube', variable: 'SONAR_AUTH_TOKEN')]) {
                     sh '''
-                      cd frontend &&  npm run sonar:sonar -- -Dsonar.login=$SONAR_AUTH_TOKEN -Dsonar.host.url=${SONAR_URL}
+                      cd frontend &&  npm start sonar:sonar -- -Dsonar.login=$SONAR_AUTH_TOKEN -Dsonar.host.url=${SONAR_URL}
                     '''
                 }
             }
