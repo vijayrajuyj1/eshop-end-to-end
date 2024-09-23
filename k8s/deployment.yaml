@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: frontend
-        image: 992382774897.dkr.ecr.us-east-1.amazonaws.com/frontend:{{ .Values.image.tag }}
+        image: 992382774897.dkr.ecr.us-east-1.amazonaws.com/frontend:23
         ports:
         - containerPort: 3000
 ---
@@ -38,7 +38,7 @@ spec:
     spec:
       containers:
       - name: backend
-        image: 992382774897.dkr.ecr.us-east-1.amazonaws.com/backend:{{ .Values.image.tag }}
+        image: 992382774897.dkr.ecr.us-east-1.amazonaws.com/backend:23
         ports:
         - containerPort: 8000
 ---
@@ -60,6 +60,6 @@ spec:
     spec:
       containers:
       - name: socket
-        image: 992382774897.dkr.ecr.us-east-1.amazonaws.com/socket:{{ .Values.image.tag }}
+        image: 992382774897.dkr.ecr.us-east-1.amazonaws.com/socket:23
         ports:
         - containerPort: 4000
