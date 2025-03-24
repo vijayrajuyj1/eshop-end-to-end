@@ -1,6 +1,6 @@
 pipeline {
     agent {
-        label 'eshop' #Docker agent
+        label 'eshop'
     }
 
     environment {
