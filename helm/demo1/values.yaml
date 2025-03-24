@@ -28,15 +28,15 @@ images:
   backend:
     repository: 992382774897.dkr.ecr.us-east-1.amazonaws.com/backend
     pullPolicy: IfNotPresent
-    tag: "v1"
+    tag: "1"
   frontend:
     repository: 992382774897.dkr.ecr.us-east-1.amazonaws.com/frontend
     pullPolicy: IfNotPresent
-    tag: "v1"
+    tag: "1"
   socket:
     repository: 992382774897.dkr.ecr.us-east-1.amazonaws.com/socket
     pullPolicy: IfNotPresent
-    tag: "v1"
+    tag: "1"
 
 # Image pull secrets
 imagePullSecrets: []
