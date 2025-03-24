@@ -110,8 +110,8 @@ helm install demo2 ./demo1
 | Variable Name       | Description                        | Example Value |
 |---------------------|-----------------------------------|--------------|
 | `DB_HOST`          | Mongodb Database Host               | `MongoDB Url |
-| `DB_USER`          | MySQL Username                    | `admin` |
-| `DB_PASSWORD`      | MySQL Password                    | `securepassword` |
+| `DB_USER`          |  Username                    | `admin` |
+| `DB_PASSWORD`      |  Password                    | `securepassword` |
 | `EKS_CLUSTER`      | Kubernetes Cluster Name           | `nodejs-cluster` |
 | `AWS_REGION`       | AWS Deployment Region
 
