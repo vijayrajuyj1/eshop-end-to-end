@@ -5,6 +5,9 @@
 ## **Overview**  
 This project is a **Node.js**-based web application deployed on **AWS EKS (Elastic Kubernetes Service)** using **Helm**. It follows a **microservices architecture** and includes a CI/CD pipeline using **Jenkins**.  
 
+**Note: All the AWS RESOURCES are Provisioned through TERRAFORM AND CLOUDFORMATION STACK**
+
+
 ### **Key Components**  
 - **Backend**: Node.js (Express.js) API handling business logic.  
 - **Frontend**: React.js for the user interface.  
