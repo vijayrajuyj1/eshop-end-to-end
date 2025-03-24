@@ -1,0 +1,43 @@
+version: '3.8'
+
+
+services:
+  backend:
+    build: ./backend
+    container_name: backend
+    restart: always
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./backend/config/.env
+    networks:
+      - app-network
+
+
+  frontend:
+    build: ./frontend  # ✅ FIXED: Build from frontend directory where Dockerfile is
+    container_name: frontend
+    restart: always
+    ports:
+      - "3000:3000"
+    networks:
+      - app-network
+    depends_on:
+      - backend
+
+
+  socket:
+    build: ./socket
+    container_name: socket
+    restart: always
+    ports:
+      - "4000:4000"
+    depends_on:
+      - backend
+    networks:
+      - app-network
+
+
+networks:
+  app-network:
+    driver: bridge
