@@ -1,4 +1,4 @@
-# Use the Node.js 18 Alpine image
+# Use the Node.js 18 Alpine image to create image 
 FROM node:18-alpine
 
 # Set the working directory inside the container
